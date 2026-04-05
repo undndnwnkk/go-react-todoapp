@@ -2,31 +2,23 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
-	"net/http"
-	"os"
+	http2 "net/http"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/joho/godotenv"
+	"github.com/undndnwnkk/go-react-todoapp/internal/adapters/http"
+	"github.com/undndnwnkk/go-react-todoapp/internal/config"
 )
 
 func main() {
-	if err := godotenv.Load(); err != nil {
-		log.Println("Error loading .env file")
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("Error while loading config: ", err)
 	}
 
 	// pgx logic
 	ctx := context.Background()
-	dsn := fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_PORT"),
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("DB_NAME"),
-		os.Getenv("DB_SSLMODE"),
-	)
+	dsn := cfg.Database.GenerateDsn()
 
 	pool, err := pgxpool.New(ctx, dsn)
 	if err != nil {
@@ -35,10 +27,14 @@ func main() {
 	defer pool.Close()
 	log.Println("Pgxpool.New pool created")
 
-	mux := http.NewServeMux()
+	if err := pool.Ping(ctx); err != nil {
+		log.Fatal("Connection to database failed: ", err)
+	}
+	log.Print("Ping already working")
 
-	//mux.HandleFunc("/users", usersHandler)      // TODO
-	//mux.HandleFunc("/users/{id}", usersHandler) // TODO
-
-	http.ListenAndServe(":8080", mux)
+	router := http.NewRouter()
+	err = http2.ListenAndServe(cfg.Server.Addr, router)
+	if err != nil {
+		log.Fatal("Error while serving: ", err)
+	}
 }

@@ -3,6 +3,7 @@ module github.com/undndnwnkk/go-react-todoapp
 go 1.26.1
 
 require (
+	github.com/caarlos0/env/v11 v11.4.0 // indirect
 	github.com/go-chi/chi/v5 v5.2.5 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
