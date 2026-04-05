@@ -24,7 +24,7 @@ func (u UserRepoImpl) GetAll(ctx context.Context) ([]domain.User, error) {
 	var users []domain.User
 
 	rows, err := u.pool.Query(ctx,
-		`SELECT * FROM todoapp.users`,
+		`SELECT * FROM users`,
 	)
 	if err != nil {
 		return nil, err
@@ -47,7 +47,7 @@ func (u UserRepoImpl) GetByID(ctx context.Context, id uuid.UUID) (domain.User, e
 
 	err := u.pool.QueryRow(
 		ctx,
-		`SELECT * FROM todoapp.users WHERE id = $1`,
+		`SELECT * FROM users WHERE id = $1`,
 		id,
 	).Scan(&user.ID, &user.Name, &user.LastName, &user.Email, &user.DateOfBirth, &user.PasswordHash, &user.CreatedAt)
 
@@ -64,7 +64,7 @@ func (u UserRepoImpl) Add(ctx context.Context, request domain.UserCreateRequest)
 	err := u.pool.QueryRow(
 		ctx,
 		`INSERT INTO 
-    	todoapp.users (name, last_name, email, date_of_birth, password_hash, created_at) 
+    	users (name, last_name, email, date_of_birth, password_hash, created_at) 
 		VALUES ($1, $2, $3, $4, $5, $6)
 		RETURNING id`,
 		request.Name,
@@ -87,7 +87,7 @@ func (u UserRepoImpl) UpdateById(ctx context.Context, id uuid.UUID, request doma
 
 	err := u.pool.QueryRow(
 		ctx,
-		`UPDATE todoapp.users
+		`UPDATE users
 		SET name = $1, last_name = $2, email = $3, password_hash = $4, date_of_birth = $5
 		WHERE id = $6`,
 		request.Name,
@@ -111,7 +111,7 @@ func (u UserRepoImpl) UpdateById(ctx context.Context, id uuid.UUID, request doma
 func (u UserRepoImpl) DeleteById(ctx context.Context, id uuid.UUID) error {
 	res, err := u.pool.Exec(
 		ctx,
-		`DELETE FROM todoapp.users 
+		`DELETE FROM users 
 		WHERE id = $1`,
 		id,
 	)
@@ -131,7 +131,7 @@ func (u UserRepoImpl) PatchById(ctx context.Context, id uuid.UUID, request domai
 
 	err := u.pool.QueryRow(
 		ctx,
-		`SELECT * FROM todoapp.users WHERE id = $1`,
+		`SELECT * FROM users WHERE id = $1`,
 		id,
 	).Scan(&base.ID, &base.Name, &base.LastName, &base.Email, &base.DateOfBirth, &base.PasswordHash, &base.CreatedAt)
 

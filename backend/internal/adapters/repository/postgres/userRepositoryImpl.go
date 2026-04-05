@@ -20,7 +20,7 @@ func NewUserRepositoryImpl(db *sql.DB) *UserRepositoryImpl {
 func (u *UserRepositoryImpl) GetAll(ctx context.Context) ([]domain.User, error) {
 	rows, err := u.db.QueryContext(ctx, `
 		SELECT id, name, last_name, email, date_of_birth, password_hash, created_at
-		FROM todoapp.users
+		FROM users
 	`)
 	if err != nil {
 		return nil, err
@@ -57,7 +57,7 @@ func (u *UserRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) (domain.
 	err := u.db.QueryRowContext(
 		ctx,
 		`SELECT id, name, last_name, email, date_of_birth, password_hash, created_at
-		 FROM todoapp.users
+		 FROM users
 		 WHERE id = $1`,
 		id,
 	).Scan(
@@ -85,7 +85,7 @@ func (u *UserRepositoryImpl) Add(ctx context.Context, request domain.UserCreateR
 
 	err := u.db.QueryRowContext(
 		ctx,
-		`INSERT INTO todoapp.users
+		`INSERT INTO users
 		 (name, last_name, email, date_of_birth, password_hash, created_at)
 		 VALUES ($1, $2, $3, $4, $5, $6)
 		 RETURNING id`,
@@ -109,7 +109,7 @@ func (u *UserRepositoryImpl) UpdateById(ctx context.Context, id uuid.UUID, reque
 
 	err := u.db.QueryRowContext(
 		ctx,
-		`UPDATE todoapp.users
+		`UPDATE users
 		 SET name = $1, last_name = $2, email = $3, date_of_birth = $4, password_hash = $5
 		 WHERE id = $6
 		 RETURNING id, name, last_name, email, date_of_birth, password_hash, created_at`,
@@ -142,7 +142,7 @@ func (u *UserRepositoryImpl) UpdateById(ctx context.Context, id uuid.UUID, reque
 func (u *UserRepositoryImpl) DeleteById(ctx context.Context, id uuid.UUID) error {
 	res, err := u.db.ExecContext(
 		ctx,
-		`DELETE FROM todoapp.users WHERE id = $1`,
+		`DELETE FROM users WHERE id = $1`,
 		id,
 	)
 	if err != nil {
@@ -165,7 +165,7 @@ func (u *UserRepositoryImpl) PatchById(ctx context.Context, id uuid.UUID, reques
 
 	err := u.db.QueryRowContext(
 		ctx,
-		`UPDATE todoapp.users
+		`UPDATE users
 		 SET name = $1, last_name = $2, email = $3, date_of_birth = $4, password_hash = $5
 		 WHERE id = $6
 		 RETURNING id, name, last_name, email, date_of_birth, password_hash, created_at`,
