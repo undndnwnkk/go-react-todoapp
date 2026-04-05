@@ -36,7 +36,7 @@ type JWTConfig struct {
 func Load() (config *Config, err error) {
 	err = godotenv.Load()
 	if err != nil {
-		return nil, domain.EnvNotFoundError
+		return nil, domain.ErrEnvNotFound
 	}
 
 	cfg := &Config{}
@@ -53,11 +53,11 @@ func Load() (config *Config, err error) {
 
 func (c *Config) Validate() error {
 	if len(c.JWT.Secret) < 32 {
-		return domain.JwtTooShortError
+		return domain.ErrShortJwtSecret
 	}
 
 	if c.JWT.AccessTTL > 15 {
-		return domain.JwtAccessLongError
+		return domain.ErrJwtAccessLong
 	}
 
 	if c.JWT.RefreshTTL > 30 {

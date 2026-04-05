@@ -100,7 +100,7 @@ func (u UserRepoImpl) UpdateById(ctx context.Context, id uuid.UUID, request doma
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return domain.User{}, domain.UserDatabaseNotFoundError
+			return domain.User{}, domain.ErrUserNotFound
 		}
 		return domain.User{}, err
 	}
@@ -121,7 +121,7 @@ func (u UserRepoImpl) DeleteById(ctx context.Context, id uuid.UUID) error {
 		return err
 	}
 	if affected == 0 {
-		return domain.UserDatabaseNotFoundError
+		return domain.ErrUserNotFound
 	}
 	return nil
 }

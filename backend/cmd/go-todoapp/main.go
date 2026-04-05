@@ -13,7 +13,7 @@ import (
 func main() {
 	cfg, err := config.Load()
 	if err != nil {
-		log.Fatalf("Error while loading config: ", err)
+		log.Fatalf("Error while loading config: %v", err)
 	}
 
 	// pgx logic

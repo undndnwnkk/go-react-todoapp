@@ -72,7 +72,7 @@ func (u *UserRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) (domain.
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return domain.User{}, domain.UserDatabaseNotFoundError
+			return domain.User{}, domain.ErrUserNotFound
 		}
 		return domain.User{}, err
 	}
@@ -131,7 +131,7 @@ func (u *UserRepositoryImpl) UpdateById(ctx context.Context, id uuid.UUID, reque
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return domain.User{}, domain.UserDatabaseNotFoundError
+			return domain.User{}, domain.ErrUserNotFound
 		}
 		return domain.User{}, err
 	}
@@ -154,7 +154,7 @@ func (u *UserRepositoryImpl) DeleteById(ctx context.Context, id uuid.UUID) error
 		return err
 	}
 	if affected == 0 {
-		return domain.UserDatabaseNotFoundError
+		return domain.ErrUserNotFound
 	}
 
 	return nil
@@ -187,7 +187,7 @@ func (u *UserRepositoryImpl) PatchById(ctx context.Context, id uuid.UUID, reques
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return domain.User{}, domain.UserDatabaseNotFoundError
+			return domain.User{}, domain.ErrUserNotFound
 		}
 		return domain.User{}, err
 	}
