@@ -13,5 +13,5 @@ type UserRepository interface {
 	Add(ctx context.Context, request domain.UserCreateRequest) (domain.UserIdResponse, error)
 	UpdateById(ctx context.Context, id uuid.UUID, request domain.UserUpdateRequest) (domain.User, error)
 	DeleteById(ctx context.Context, id uuid.UUID) error
-	PatchById(ctx context.Context, id uuid.UUID, request domain.UserUpdateRequest) (domain.User, error)
+	PatchById(ctx context.Context, id uuid.UUID, request domain.UserPatchRequest) (domain.User, error)
 }

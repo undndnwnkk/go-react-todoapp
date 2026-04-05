@@ -1,12 +1,14 @@
 package main
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
-	"github.com/joho/godotenv"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -14,6 +16,8 @@ func main() {
 		log.Println("Error loading .env file")
 	}
 
+	// pgx logic
+	ctx := context.Background()
 	dsn := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		os.Getenv("DB_HOST"),
@@ -24,17 +28,12 @@ func main() {
 		os.Getenv("DB_SSLMODE"),
 	)
 
-	db, err := sql.Open("postgres", dsn)
+	pool, err := pgxpool.New(ctx, dsn)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Pgxpool.New:", err)
 	}
-	defer db.Close()
-
-	if err := db.Ping(); err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println("connected")
+	defer pool.Close()
+	log.Println("Pgxpool.New pool created")
 
 	mux := http.NewServeMux()
 
