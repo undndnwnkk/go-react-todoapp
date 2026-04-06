@@ -4,13 +4,13 @@ import "errors"
 
 var (
 	// Database errors
-	ErrUserNotFound  = errors.New("dont found user with this id")
+	ErrUserNotFound  = errors.New("user not found")
 	ErrAddToDatabase = errors.New("cant add user to user database")
 
 	ErrCategoryNotFound  = errors.New("dont found category with this id")
 	ErrCategoryForbidden = errors.New("you dont have access to this category")
 
-	ErrTaskNotFound  = errors.New("dont found task with this id")
+	ErrTaskNotFound  = errors.New("task not found")
 	ErrTaskForbidden = errors.New("you dont have access to this task")
 
 	// Env errors

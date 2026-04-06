@@ -2,10 +2,10 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/undndnwnkk/go-react-todoapp/internal/core/domain"
 )
@@ -89,7 +89,8 @@ func (u UserRepoImpl) UpdateByID(ctx context.Context, id uuid.UUID, request doma
 		ctx,
 		`UPDATE users
 		SET name = $1, last_name = $2, email = $3, password_hash = $4, date_of_birth = $5
-		WHERE id = $6`,
+		WHERE id = $6
+		RETURNING id, name, last_name, email, date_of_birth, password_hash, created_at`,
 		request.Name,
 		request.LastName,
 		request.Email,
@@ -99,7 +100,7 @@ func (u UserRepoImpl) UpdateByID(ctx context.Context, id uuid.UUID, request doma
 	).Scan(&user.ID, &user.Name, &user.LastName, &user.Email, &user.DateOfBirth, &user.PasswordHash, &user.CreatedAt)
 
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return domain.User{}, domain.ErrUserNotFound
 		}
 		return domain.User{}, err

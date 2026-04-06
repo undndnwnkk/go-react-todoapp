@@ -1,5 +1,4 @@
 -- +goose Up
-SELECT 'up SQL query';
 
 CREATE TABLE IF NOT EXISTS refresh_tokens (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -13,5 +12,4 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
 );
 
 -- +goose Down
-SELECT 'down SQL query';
 DROP TABLE IF EXISTS refresh_tokens;

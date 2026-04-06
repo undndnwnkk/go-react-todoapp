@@ -99,7 +99,7 @@ func (r *CategoryRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) (dom
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return domain.Category{}, err
+			return domain.Category{}, domain.ErrCategoryNotFound
 		}
 		return domain.Category{}, err
 	}
@@ -152,7 +152,7 @@ func (r *CategoryRepositoryImpl) DeleteByID(ctx context.Context, id uuid.UUID) e
 	}
 
 	if cmdTag.RowsAffected() == 0 {
-		return pgx.ErrNoRows
+		return domain.ErrCategoryNotFound
 	}
 
 	return nil

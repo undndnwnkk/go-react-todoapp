@@ -1,5 +1,4 @@
 -- +goose Up
-SELECT 'up SQL query';
 
 CREATE TABLE IF NOT EXISTS tasks (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -17,8 +16,8 @@ CREATE TABLE IF NOT EXISTS tasks (
                                  ON DELETE CASCADE,
     CONSTRAINT fk_tasks_categories
                                  FOREIGN KEY (category_id) REFERENCES categories(id)
+                                 ON DELETE SET NULL
 );
 
 -- +goose Down
-SELECT 'down SQL query';
 DROP TABLE IF EXISTS tasks;

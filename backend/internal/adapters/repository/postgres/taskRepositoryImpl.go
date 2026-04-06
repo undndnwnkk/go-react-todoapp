@@ -12,6 +12,10 @@ type TaskRepositoryImpl struct {
 	pool *pgxpool.Pool
 }
 
+func NewTaskRepositoryImpl(pool *pgxpool.Pool) *TaskRepositoryImpl {
+	return &TaskRepositoryImpl{pool: pool}
+}
+
 func (t *TaskRepositoryImpl) GetAll(ctx context.Context) ([]domain.Task, error) {
 	result := make([]domain.Task, 0)
 	rows, err := t.pool.Query(
@@ -64,7 +68,7 @@ func (t *TaskRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) (domain.
 		id,
 	).Scan(&res.ID, &res.UserID, &res.CategoryID, &res.Title, &res.Description, &res.Status, &res.Priority, &res.DueDate, &res.CreatedAt, &res.UpdatedAt)
 	if err != nil {
-		return domain.Task{}, nil
+		return domain.Task{}, err
 	}
 
 	return res, nil
@@ -109,7 +113,7 @@ func (t *TaskRepositoryImpl) UpdateByID(ctx context.Context, id uuid.UUID, reque
 		request.Priority,
 		request.DueDate,
 		id,
-	).Scan(&res.CategoryID, &res.Title, &res.Description, &res.Status, &res.Priority, &res.DueDate, &res.CreatedAt, &res.UpdatedAt)
+	).Scan(&res.ID, &res.UserID, &res.CategoryID, &res.Title, &res.Description, &res.Status, &res.Priority, &res.DueDate, &res.CreatedAt, &res.UpdatedAt)
 
 	if err != nil {
 		return domain.Task{}, nil
