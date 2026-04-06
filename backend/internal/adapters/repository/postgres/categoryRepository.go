@@ -1,0 +1,159 @@
+package postgres
+
+import (
+	"context"
+	"errors"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/undndnwnkk/go-react-todoapp/internal/core/domain"
+)
+
+type CategoryRepositoryImpl struct {
+	db *pgxpool.Pool
+}
+
+func NewCategoryRepositoryImpl(db *pgxpool.Pool) *CategoryRepositoryImpl {
+	return &CategoryRepositoryImpl{
+		db: db,
+	}
+}
+
+func (r *CategoryRepositoryImpl) GetAll(ctx context.Context) ([]domain.Category, error) {
+	const query = `
+		SELECT id, user_id, name, color
+		FROM categories
+		ORDER BY name
+	`
+
+	rows, err := r.db.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	categories := make([]domain.Category, 0)
+	for rows.Next() {
+		var category domain.Category
+
+		if err := rows.Scan(
+			&category.ID,
+			&category.UserID,
+			&category.Name,
+			&category.Color,
+		); err != nil {
+			return nil, err
+		}
+
+		categories = append(categories, category)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return categories, nil
+}
+
+func (r *CategoryRepositoryImpl) Create(ctx context.Context, request domain.CategoryCreateRequest) (domain.Category, error) {
+	const query = `
+		INSERT INTO categories (user_id, name, color)
+		VALUES ($1, $2, $3)
+		RETURNING id, user_id, name, color
+	`
+
+	var category domain.Category
+
+	err := r.db.QueryRow(ctx, query,
+		request.UserId,
+		request.Name,
+		request.Color,
+	).Scan(
+		&category.ID,
+		&category.UserID,
+		&category.Name,
+		&category.Color,
+	)
+	if err != nil {
+		return domain.Category{}, err
+	}
+
+	return category, nil
+}
+
+func (r *CategoryRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) (domain.Category, error) {
+	const query = `
+		SELECT id, user_id, name, color
+		FROM categories
+		WHERE id = $1
+	`
+
+	var category domain.Category
+
+	err := r.db.QueryRow(ctx, query, id).Scan(
+		&category.ID,
+		&category.UserID,
+		&category.Name,
+		&category.Color,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.Category{}, err
+		}
+		return domain.Category{}, err
+	}
+
+	return category, nil
+}
+
+func (r *CategoryRepositoryImpl) UpdateByID(ctx context.Context, id uuid.UUID, request domain.CategoryUpdateRequest) (domain.Category, error) {
+	const query = `
+		UPDATE categories
+		SET user_id = $2,
+			name = $3,
+			color = $4
+		WHERE id = $1
+		RETURNING id, user_id, name, color
+	`
+
+	var category domain.Category
+
+	err := r.db.QueryRow(ctx, query,
+		id,
+		request.UserId,
+		request.Name,
+		request.Color,
+	).Scan(
+		&category.ID,
+		&category.UserID,
+		&category.Name,
+		&category.Color,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.Category{}, err
+		}
+		return domain.Category{}, err
+	}
+
+	return category, nil
+}
+
+func (r *CategoryRepositoryImpl) DeleteByID(ctx context.Context, id uuid.UUID) error {
+	const query = `
+		DELETE FROM categories
+		WHERE id = $1
+	`
+
+	cmdTag, err := r.db.Exec(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	if cmdTag.RowsAffected() == 0 {
+		return pgx.ErrNoRows
+	}
+
+	return nil
+}

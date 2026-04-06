@@ -24,6 +24,8 @@ const (
 
 type Task struct {
 	ID          uuid.UUID
+	UserID      uuid.UUID
+	CategoryID  *uuid.UUID
 	Title       string
 	Description string
 	Status      Status
@@ -34,6 +36,8 @@ type Task struct {
 }
 
 type TaskCreateRequest struct {
+	UserID      uuid.UUID
+	CategoryID  *uuid.UUID
 	Title       string
 	Description string
 	Status      Status
@@ -42,6 +46,8 @@ type TaskCreateRequest struct {
 }
 
 type TaskUpdateRequest struct {
+	UserID      uuid.UUID
+	CategoryID  *uuid.UUID
 	Title       string
 	Description string
 	Status      Status
@@ -50,6 +56,7 @@ type TaskUpdateRequest struct {
 }
 
 type TaskPatchRequest struct {
+	CategoryID  *uuid.UUID
 	Title       *string
 	Description *string
 	Status      *Status

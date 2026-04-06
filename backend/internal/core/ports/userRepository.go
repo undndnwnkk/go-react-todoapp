@@ -10,8 +10,8 @@ import (
 type UserRepository interface {
 	GetAll(ctx context.Context) ([]domain.User, error)
 	GetByID(ctx context.Context, id uuid.UUID) (domain.User, error)
-	Add(ctx context.Context, request domain.UserCreateRequest) (domain.UserIdResponse, error)
-	UpdateById(ctx context.Context, id uuid.UUID, request domain.UserUpdateRequest) (domain.User, error)
-	DeleteById(ctx context.Context, id uuid.UUID) error
-	PatchById(ctx context.Context, id uuid.UUID, request domain.UserPatchRequest) (domain.User, error)
+	Create(ctx context.Context, request domain.UserCreateRequest) (domain.UserIdResponse, error)
+	UpdateByID(ctx context.Context, id uuid.UUID, request domain.UserUpdateRequest) (domain.User, error)
+	DeleteByID(ctx context.Context, id uuid.UUID) error
+	PatchByID(ctx context.Context, id uuid.UUID, request domain.UserPatchRequest) (domain.User, error)
 }

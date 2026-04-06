@@ -4,7 +4,7 @@ import "github.com/google/uuid"
 
 type Category struct {
 	ID     uuid.UUID
-	UserId uuid.UUID
+	UserID uuid.UUID
 	Name   string
 	Color  string
 }
