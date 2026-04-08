@@ -116,7 +116,7 @@ func (t *TaskRepositoryImpl) UpdateByID(ctx context.Context, id uuid.UUID, reque
 	).Scan(&res.ID, &res.UserID, &res.CategoryID, &res.Title, &res.Description, &res.Status, &res.Priority, &res.DueDate, &res.CreatedAt, &res.UpdatedAt)
 
 	if err != nil {
-		return domain.Task{}, nil
+		return domain.Task{}, err
 	}
 
 	return res, nil

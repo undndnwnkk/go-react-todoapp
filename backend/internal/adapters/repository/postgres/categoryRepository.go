@@ -66,7 +66,7 @@ func (r *CategoryRepositoryImpl) Create(ctx context.Context, request domain.Cate
 	var category domain.Category
 
 	err := r.db.QueryRow(ctx, query,
-		request.UserId,
+		request.UserID,
 		request.Name,
 		request.Color,
 	).Scan(
@@ -152,7 +152,7 @@ func (r *CategoryRepositoryImpl) UpdateByID(ctx context.Context, id uuid.UUID, r
 
 	err := r.db.QueryRow(ctx, query,
 		id,
-		request.UserId,
+		request.UserID,
 		request.Name,
 		request.Color,
 	).Scan(
@@ -163,7 +163,7 @@ func (r *CategoryRepositoryImpl) UpdateByID(ctx context.Context, id uuid.UUID, r
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return domain.Category{}, err
+			return domain.Category{}, domain.ErrCategoryNotFound
 		}
 		return domain.Category{}, err
 	}
@@ -207,10 +207,10 @@ func (r *CategoryRepositoryImpl) PatchByID(ctx context.Context, id uuid.UUID, re
 func (r *CategoryRepositoryImpl) validatePatchData(base domain.Category, request domain.CategoryPatchRequest) domain.CategoryUpdateRequest {
 	var result domain.CategoryUpdateRequest
 
-	if request.UserId == nil {
-		result.UserId = base.UserID
+	if request.UserID == nil {
+		result.UserID = base.UserID
 	} else {
-		result.UserId = *request.UserId
+		result.UserID = *request.UserID
 	}
 	if request.Name == nil {
 		result.Name = base.Name

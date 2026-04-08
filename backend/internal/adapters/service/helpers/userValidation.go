@@ -23,6 +23,7 @@ func checkPasswordLength(password string) error {
 }
 
 func checkDateOfBirth(dateOfBirth time.Time) error {
+
 	min := time.Date(1900, 1, 1, 0, 0, 0, 0, time.UTC)
 	now := time.Now()
 	max := time.Date(now.Year()+1, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -43,8 +44,10 @@ func CheckUserCreateRequest(request domain.UserCreateRequest) error {
 		return err
 	}
 
-	if err := checkDateOfBirth(*request.DateOfBirth); err != nil {
-		return err
+	if request.DateOfBirth != nil {
+		if err := checkDateOfBirth(*request.DateOfBirth); err != nil {
+			return err
+		}
 	}
 
 	return nil

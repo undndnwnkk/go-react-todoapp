@@ -14,5 +14,5 @@ type CategoryRepository interface {
 	GetByUserID(ctx context.Context, userId uuid.UUID) ([]domain.Category, error)
 	UpdateByID(ctx context.Context, id uuid.UUID, request domain.CategoryUpdateRequest) (domain.Category, error)
 	DeleteByID(ctx context.Context, id uuid.UUID) error
-	PatchById(ctx context.Context, id uuid.UUID, request domain.CategoryPatchRequest) (domain.Category, error)
+	PatchByID(ctx context.Context, id uuid.UUID, request domain.CategoryPatchRequest) (domain.Category, error)
 }

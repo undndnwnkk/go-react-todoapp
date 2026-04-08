@@ -13,7 +13,7 @@ type CategoryServiceImpl struct {
 	repo ports.CategoryRepository
 }
 
-func (c CategoryServiceImpl) GetAll(ctx context.Context) ([]domain.Category, error) {
+func (c *CategoryServiceImpl) GetAll(ctx context.Context) ([]domain.Category, error) {
 	categories, err := c.repo.GetAll(ctx)
 	if err != nil {
 		return nil, err
@@ -22,7 +22,7 @@ func (c CategoryServiceImpl) GetAll(ctx context.Context) ([]domain.Category, err
 	return categories, nil
 }
 
-func (c CategoryServiceImpl) Create(ctx context.Context, request domain.CategoryCreateRequest) (domain.Category, error) {
+func (c *CategoryServiceImpl) Create(ctx context.Context, request domain.CategoryCreateRequest) (domain.Category, error) {
 	if err := helpers.CheckCategoryCreateRequest(request); err != nil {
 		return domain.Category{}, err
 	}
@@ -35,7 +35,7 @@ func (c CategoryServiceImpl) Create(ctx context.Context, request domain.Category
 	return category, nil
 }
 
-func (c CategoryServiceImpl) GetByID(ctx context.Context, id uuid.UUID) (domain.Category, error) {
+func (c *CategoryServiceImpl) GetByID(ctx context.Context, id uuid.UUID) (domain.Category, error) {
 	category, err := c.repo.GetByID(ctx, id)
 	if err != nil {
 		return domain.Category{}, err
@@ -44,7 +44,7 @@ func (c CategoryServiceImpl) GetByID(ctx context.Context, id uuid.UUID) (domain.
 	return category, nil
 }
 
-func (c CategoryServiceImpl) GetByUserID(ctx context.Context, userId uuid.UUID) ([]domain.Category, error) {
+func (c *CategoryServiceImpl) GetByUserID(ctx context.Context, userId uuid.UUID) ([]domain.Category, error) {
 	category, err := c.repo.GetByUserID(ctx, userId)
 	if err != nil {
 		return nil, err
@@ -53,7 +53,7 @@ func (c CategoryServiceImpl) GetByUserID(ctx context.Context, userId uuid.UUID) 
 	return category, nil
 }
 
-func (c CategoryServiceImpl) UpdateByID(ctx context.Context, id uuid.UUID, request domain.CategoryUpdateRequest) (domain.Category, error) {
+func (c *CategoryServiceImpl) UpdateByID(ctx context.Context, id uuid.UUID, request domain.CategoryUpdateRequest) (domain.Category, error) {
 	category, err := c.repo.UpdateByID(ctx, id, request)
 	if err != nil {
 		return domain.Category{}, err
@@ -62,7 +62,7 @@ func (c CategoryServiceImpl) UpdateByID(ctx context.Context, id uuid.UUID, reque
 	return category, nil
 }
 
-func (c CategoryServiceImpl) PatchByID(ctx context.Context, id uuid.UUID, request domain.CategoryPatchRequest) (domain.Category, error) {
+func (c *CategoryServiceImpl) PatchByID(ctx context.Context, id uuid.UUID, request domain.CategoryPatchRequest) (domain.Category, error) {
 	category, err := c.repo.PatchById(ctx, id, request)
 	if err != nil {
 		return domain.Category{}, err
@@ -71,7 +71,7 @@ func (c CategoryServiceImpl) PatchByID(ctx context.Context, id uuid.UUID, reques
 	return category, nil
 }
 
-func (c CategoryServiceImpl) DeleteByID(ctx context.Context, id uuid.UUID) error {
+func (c *CategoryServiceImpl) DeleteByID(ctx context.Context, id uuid.UUID) error {
 	err := c.repo.DeleteByID(ctx, id)
 	if err != nil {
 		return err

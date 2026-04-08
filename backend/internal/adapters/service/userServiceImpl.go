@@ -13,7 +13,16 @@ type UserServiceImpl struct {
 	repo ports.UserRepository
 }
 
-func (u UserServiceImpl) Register(ctx context.Context, request domain.UserCreateRequest) (domain.UserIdResponse, error) {
+func (u *UserServiceImpl) GetAll(ctx context.Context) ([]domain.User, error) {
+	users, err := u.repo.GetAll(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
+
+func (u *UserServiceImpl) Register(ctx context.Context, request domain.UserCreateRequest) (domain.UserIdResponse, error) {
 	if err := helpers.CheckUserCreateRequest(request); err != nil {
 		return domain.UserIdResponse{}, err
 	}
@@ -33,7 +42,7 @@ func (u UserServiceImpl) Register(ctx context.Context, request domain.UserCreate
 	return user, nil
 }
 
-func (u UserServiceImpl) Login(ctx context.Context, request domain.UserLoginRequest) (domain.User, error) {
+func (u *UserServiceImpl) Login(ctx context.Context, request domain.UserLoginRequest) (domain.User, error) {
 	user, err := u.repo.GetByEmail(ctx, request.Email)
 	if err != nil {
 		return domain.User{}, err
@@ -46,7 +55,7 @@ func (u UserServiceImpl) Login(ctx context.Context, request domain.UserLoginRequ
 	return user, nil
 }
 
-func (u UserServiceImpl) GetByID(ctx context.Context, id uuid.UUID) (domain.User, error) {
+func (u *UserServiceImpl) GetByID(ctx context.Context, id uuid.UUID) (domain.User, error) {
 	user, err := u.repo.GetByID(ctx, id)
 	if err != nil {
 		return domain.User{}, err
@@ -55,7 +64,7 @@ func (u UserServiceImpl) GetByID(ctx context.Context, id uuid.UUID) (domain.User
 	return user, nil
 }
 
-func (u UserServiceImpl) UpdateByID(ctx context.Context, id uuid.UUID, request domain.UserUpdateRequest) (domain.User, error) {
+func (u *UserServiceImpl) UpdateByID(ctx context.Context, id uuid.UUID, request domain.UserUpdateRequest) (domain.User, error) {
 	user, err := u.repo.UpdateByID(ctx, id, request)
 	if err != nil {
 		return domain.User{}, err
@@ -64,7 +73,7 @@ func (u UserServiceImpl) UpdateByID(ctx context.Context, id uuid.UUID, request d
 	return user, err
 }
 
-func (u UserServiceImpl) DeleteByID(ctx context.Context, id uuid.UUID) error {
+func (u *UserServiceImpl) DeleteByID(ctx context.Context, id uuid.UUID) error {
 	if err := u.repo.DeleteByID(ctx, id); err != nil {
 		return err
 	}

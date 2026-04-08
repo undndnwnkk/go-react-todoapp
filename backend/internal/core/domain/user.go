@@ -22,7 +22,6 @@ type UserCreateRequest struct {
 	Email       string     `json:"email"`
 	Password    string     `json:"password"`
 	DateOfBirth *time.Time `json:"date_of_birth"`
-	CreatedAt   time.Time  `json:"created_at"`
 }
 
 type UserUpdateRequest struct {

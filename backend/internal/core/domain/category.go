@@ -10,19 +10,19 @@ type Category struct {
 }
 
 type CategoryCreateRequest struct {
-	UserId uuid.UUID
+	UserID uuid.UUID
 	Name   string
 	Color  string
 }
 
 type CategoryUpdateRequest struct {
-	UserId uuid.UUID
+	UserID uuid.UUID
 	Name   string
 	Color  string
 }
 
 type CategoryPatchRequest struct {
-	UserId *uuid.UUID
+	UserID *uuid.UUID
 	Name   *string
 	Color  *string
 }
