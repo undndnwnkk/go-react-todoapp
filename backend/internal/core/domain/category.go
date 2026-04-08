@@ -20,3 +20,9 @@ type CategoryUpdateRequest struct {
 	Name   string
 	Color  string
 }
+
+type CategoryPatchRequest struct {
+	UserId *uuid.UUID
+	Name   *string
+	Color  *string
+}

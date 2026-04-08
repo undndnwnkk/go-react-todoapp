@@ -107,6 +107,37 @@ func (r *CategoryRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) (dom
 	return category, nil
 }
 
+func (r *CategoryRepositoryImpl) GetByUserID(ctx context.Context, userId uuid.UUID) ([]domain.Category, error) {
+	const query = `
+		SELECT id, user_id, name, color
+		FROM categories
+		WHERE user_id = $1
+`
+	categories := make([]domain.Category, 0)
+
+	rows, err := r.db.Query(ctx, query, userId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var category domain.Category
+		if err := rows.Scan(
+			&category.ID,
+			&category.UserID,
+			&category.Name,
+			&category.Color,
+		); err != nil {
+			return nil, err
+		}
+
+		categories = append(categories, category)
+	}
+
+	return categories, nil
+}
+
 func (r *CategoryRepositoryImpl) UpdateByID(ctx context.Context, id uuid.UUID, request domain.CategoryUpdateRequest) (domain.Category, error) {
 	const query = `
 		UPDATE categories
@@ -156,4 +187,40 @@ func (r *CategoryRepositoryImpl) DeleteByID(ctx context.Context, id uuid.UUID) e
 	}
 
 	return nil
+}
+
+func (r *CategoryRepositoryImpl) PatchByID(ctx context.Context, id uuid.UUID, request domain.CategoryPatchRequest) (domain.Category, error) {
+	category, err := r.GetByID(ctx, id)
+	if err != nil {
+		return domain.Category{}, err
+	}
+
+	toUpdate := r.validatePatchData(category, request)
+	updated, err := r.UpdateByID(ctx, id, toUpdate)
+	if err != nil {
+		return domain.Category{}, err
+	}
+
+	return updated, nil
+}
+
+func (r *CategoryRepositoryImpl) validatePatchData(base domain.Category, request domain.CategoryPatchRequest) domain.CategoryUpdateRequest {
+	var result domain.CategoryUpdateRequest
+
+	if request.UserId == nil {
+		result.UserId = base.UserID
+	} else {
+		result.UserId = *request.UserId
+	}
+	if request.Name == nil {
+		result.Name = base.Name
+	} else {
+		result.Name = *request.Name
+	}
+	if request.Color == nil {
+		result.Color = base.Color
+	} else {
+		result.Color = *request.Color
+	}
+	return result
 }

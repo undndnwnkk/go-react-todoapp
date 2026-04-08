@@ -58,6 +58,22 @@ func (u UserRepoImpl) GetByID(ctx context.Context, id uuid.UUID) (domain.User, e
 	return user, nil
 }
 
+func (u UserRepoImpl) GetByEmail(ctx context.Context, email string) (domain.User, error) {
+	var user domain.User
+
+	err := u.pool.QueryRow(
+		ctx,
+		`SELECT * FROM users WHERE email = $1`,
+		email,
+	).Scan(&user.ID, &user.Name, &user.LastName, &user.Email, &user.DateOfBirth, &user.PasswordHash, &user.CreatedAt)
+
+	if err != nil {
+		return domain.User{}, domain.ErrUserNotFound
+	}
+
+	return user, nil
+}
+
 func (u UserRepoImpl) Create(ctx context.Context, request domain.UserCreateRequest) (domain.UserIdResponse, error) {
 	var id uuid.UUID
 
@@ -71,7 +87,7 @@ func (u UserRepoImpl) Create(ctx context.Context, request domain.UserCreateReque
 		request.LastName,
 		request.Email,
 		request.DateOfBirth,
-		request.PasswordHash,
+		request.Password,
 		request.CreatedAt,
 	).Scan(&id)
 

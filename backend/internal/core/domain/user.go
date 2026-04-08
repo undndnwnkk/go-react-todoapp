@@ -17,12 +17,12 @@ type User struct {
 }
 
 type UserCreateRequest struct {
-	Name         string    `json:"name"`
-	LastName     string    `json:"last_name"`
-	Email        string    `json:"email"`
-	PasswordHash string    `json:"password_hash"`
-	DateOfBirth  *string   `json:"date_of_birth"`
-	CreatedAt    time.Time `json:"created_at"`
+	Name        string     `json:"name"`
+	LastName    string     `json:"last_name"`
+	Email       string     `json:"email"`
+	Password    string     `json:"password"`
+	DateOfBirth *time.Time `json:"date_of_birth"`
+	CreatedAt   time.Time  `json:"created_at"`
 }
 
 type UserUpdateRequest struct {
@@ -39,6 +39,11 @@ type UserPatchRequest struct {
 	Email        *string `json:"email"`
 	PasswordHash *string `json:"password_hash"`
 	DateOfBirth  *string `json:"date_of_birth"`
+}
+
+type UserLoginRequest struct {
+	Email    string
+	Password string
 }
 
 type UserIdResponse struct {

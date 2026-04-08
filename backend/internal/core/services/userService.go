@@ -1,4 +1,4 @@
-package ports
+package services
 
 import (
 	"context"
@@ -7,12 +7,11 @@ import (
 	"github.com/undndnwnkk/go-react-todoapp/internal/core/domain"
 )
 
-type UserRepository interface {
+type UserService interface {
 	GetAll(ctx context.Context) ([]domain.User, error)
+	Register(ctx context.Context, request domain.UserCreateRequest) (domain.UserIdResponse, error)
+	Login(ctx context.Context, request domain.UserLoginRequest) (domain.User, error)
 	GetByID(ctx context.Context, id uuid.UUID) (domain.User, error)
-	GetByEmail(ctx context.Context, email string) (domain.User, error)
-	Create(ctx context.Context, request domain.UserCreateRequest) (domain.UserIdResponse, error)
 	UpdateByID(ctx context.Context, id uuid.UUID, request domain.UserUpdateRequest) (domain.User, error)
 	DeleteByID(ctx context.Context, id uuid.UUID) error
-	PatchByID(ctx context.Context, id uuid.UUID, request domain.UserPatchRequest) (domain.User, error)
 }
