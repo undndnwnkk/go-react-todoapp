@@ -7,6 +7,10 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/undndnwnkk/go-react-todoapp/internal/adapters/http"
+	"github.com/undndnwnkk/go-react-todoapp/internal/adapters/http/handler"
+	"github.com/undndnwnkk/go-react-todoapp/internal/adapters/repository/postgres"
+	"github.com/undndnwnkk/go-react-todoapp/internal/adapters/service"
+	"github.com/undndnwnkk/go-react-todoapp/internal/app"
 	"github.com/undndnwnkk/go-react-todoapp/internal/config"
 )
 
@@ -32,7 +36,24 @@ func main() {
 	}
 	log.Print("Ping already working")
 
-	router := http.NewRouter()
+	// DI
+	userRepository := postgres.NewUserRepository(pool)
+	taskRepository := postgres.NewTaskRepository(pool)
+	categoryRepository := postgres.NewCategoryRepository(pool)
+
+	userService := service.NewUserService(userRepository)
+	taskService := service.NewTaskService(taskRepository)
+	categoryService := service.NewCategoryService(categoryRepository)
+
+	userHandler := handler.NewUserHandler(userService)
+	taskHandler := handler.NewTaskHandler(taskService)
+	categoryHandler := handler.NewCategoryHandler(categoryService)
+	// TODO
+	authHandler := handler.NewAuthHandler("todo")
+
+	handlers := app.NewHandlers(userHandler, taskHandler, categoryHandler, authHandler)
+
+	router := http.NewRouter(handlers)
 	err = http2.ListenAndServe(cfg.Server.Addr, router)
 	if err != nil {
 		log.Fatal("Error while serving: ", err)

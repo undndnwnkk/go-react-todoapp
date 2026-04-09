@@ -14,7 +14,7 @@ type CategoryRepositoryImpl struct {
 	db *pgxpool.Pool
 }
 
-func NewCategoryRepositoryImpl(db *pgxpool.Pool) *CategoryRepositoryImpl {
+func NewCategoryRepository(db *pgxpool.Pool) *CategoryRepositoryImpl {
 	return &CategoryRepositoryImpl{
 		db: db,
 	}

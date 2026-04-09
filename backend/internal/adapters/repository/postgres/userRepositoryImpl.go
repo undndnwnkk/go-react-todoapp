@@ -14,7 +14,7 @@ type UserRepoImpl struct {
 	pool *pgxpool.Pool
 }
 
-func NewUserRepo(pool *pgxpool.Pool) *UserRepoImpl {
+func NewUserRepository(pool *pgxpool.Pool) *UserRepoImpl {
 	return &UserRepoImpl{
 		pool: pool,
 	}

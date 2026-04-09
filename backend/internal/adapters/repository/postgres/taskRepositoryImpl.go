@@ -192,3 +192,7 @@ func validateTaskPatchData(base domain.Task, request domain.TaskPatchRequest) do
 
 	return result
 }
+
+func NewTaskRepository(pool *pgxpool.Pool) *TaskRepositoryImpl {
+	return &TaskRepositoryImpl{pool: pool}
+}
