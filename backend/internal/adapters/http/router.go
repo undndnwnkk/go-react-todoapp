@@ -19,9 +19,9 @@ func NewRouter(handlers *app.Handlers) chi.Router {
 
 		// Auth TODO
 		router.Route("/auth", func(router chi.Router) {
-			router.Post("/register", handlers.AuthHandler.Pass)
-			router.Post("/login", handlers.AuthHandler.Pass)
-			router.Post("/refresh", handlers.AuthHandler.Pass)
+			router.Post("/register", handlers.AuthHandler.Register)
+			router.Post("/login", handlers.AuthHandler.Login)
+			router.Post("/refresh", handlers.AuthHandler.Refresh)
 		})
 
 		// Users

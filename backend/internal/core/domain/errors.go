@@ -8,6 +8,7 @@ var (
 	ErrShortPassword      = errors.New("short password")
 	ErrInvalidDateOfBirth = errors.New("invalid date of birth")
 	ErrInvalidPassword    = errors.New("invalid password")
+	ErrUserAlreadyExists  = errors.New("user already exists")
 
 	ErrShortTitle = errors.New("short title")
 

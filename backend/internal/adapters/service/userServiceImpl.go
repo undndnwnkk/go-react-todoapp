@@ -27,6 +27,11 @@ func (u *UserServiceImpl) Register(ctx context.Context, request domain.UserCreat
 		return domain.UserIdResponse{}, err
 	}
 
+	user, _ := u.repo.GetByEmail(ctx, request.Email)
+	if user.Email != "" && user.Name != "" {
+		return domain.UserIdResponse{}, domain.ErrUserAlreadyExists
+	}
+
 	hashedPassword, err := helpers.HashPassword(request.Password)
 	if err != nil {
 		return domain.UserIdResponse{}, err
@@ -34,12 +39,12 @@ func (u *UserServiceImpl) Register(ctx context.Context, request domain.UserCreat
 
 	request.Password = hashedPassword
 
-	user, err := u.repo.Create(ctx, request)
+	response, err := u.repo.Create(ctx, request)
 	if err != nil {
 		return domain.UserIdResponse{}, err
 	}
 
-	return user, nil
+	return response, nil
 }
 
 func (u *UserServiceImpl) Login(ctx context.Context, request domain.UserLoginRequest) (domain.User, error) {

@@ -17,11 +17,11 @@ type User struct {
 }
 
 type UserCreateRequest struct {
-	Name        string     `json:"name"`
-	LastName    string     `json:"last_name"`
-	Email       string     `json:"email"`
-	Password    string     `json:"password"`
-	DateOfBirth *time.Time `json:"date_of_birth"`
+	Name        string     `json:"name" validate:"required,min=2,max=30"`
+	LastName    string     `json:"last_name" validate:"required,min=2,max=30"`
+	Email       string     `json:"email" validate:"required,email"`
+	Password    string     `json:"password" validate:"required,min=8,max=100"`
+	DateOfBirth *time.Time `json:"date_of_birth" validate:"omitempty"`
 }
 
 type UserUpdateRequest struct {

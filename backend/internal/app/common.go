@@ -1,6 +1,8 @@
 package app
 
-import "github.com/undndnwnkk/go-react-todoapp/internal/adapters/http/handler"
+import (
+	"github.com/undndnwnkk/go-react-todoapp/internal/adapters/http/handler"
+)
 
 type Handlers struct {
 	UserHandler     *handler.UserHandler
