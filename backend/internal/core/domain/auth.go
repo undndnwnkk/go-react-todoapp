@@ -10,6 +10,7 @@ import (
 type TokenPair struct {
 	AccessToken  string
 	RefreshToken string
+	ExpiresAt    int64
 }
 
 type Claims struct {
