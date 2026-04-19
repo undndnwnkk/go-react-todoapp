@@ -19,8 +19,7 @@ func NewCategoryHandler(csc services.CategoryService) *CategoryHandler {
 }
 
 func (h *CategoryHandler) GetAllCategories(w http.ResponseWriter, r *http.Request) {
-	decoder := json.NewDecoder(r.Body)
-	decoder.DisallowUnknownFields()
+	w.Header().Set("Content-Type", "application/json")
 
 	categories, err := h.categoryService.GetAll(r.Context())
 	if err != nil {
@@ -28,23 +27,19 @@ func (h *CategoryHandler) GetAllCategories(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	err = decoder.Decode(&categories)
-	if err != nil {
-		http.Error(w, "error while decoding", http.StatusInternalServerError)
+	if err := json.NewEncoder(w).Encode(categories); err != nil {
+		http.Error(w, "error while encoding", http.StatusInternalServerError)
 		return
 	}
-
-	w.WriteHeader(http.StatusOK)
 }
 
 func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request) {
-	encoder := json.NewEncoder(w)
+	w.Header().Set("Content-Type", "application/json")
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
 
 	var request domain.CategoryCreateRequest
-	err := decoder.Decode(&request)
-	if err != nil {
+	if err := decoder.Decode(&request); err != nil {
 		http.Error(w, "error while decoding", http.StatusBadRequest)
 		return
 	}
@@ -55,17 +50,12 @@ func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err = encoder.Encode(category)
-	if err != nil {
-		http.Error(w, "error while encoding", http.StatusInternalServerError)
-		return
-	}
-
 	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(category)
 }
 
 func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request) {
-	encoder := json.NewEncoder(w)
+	w.Header().Set("Content-Type", "application/json")
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
 
@@ -76,8 +66,7 @@ func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request)
 	}
 
 	var request domain.CategoryUpdateRequest
-	err = decoder.Decode(&request)
-	if err != nil {
+	if err := decoder.Decode(&request); err != nil {
 		http.Error(w, "invalid request", http.StatusBadRequest)
 		return
 	}
@@ -88,25 +77,17 @@ func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err = encoder.Encode(category)
-	if err != nil {
-		http.Error(w, "error while encoding", http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(category)
 }
 
 func (h *CategoryHandler) DeleteCategory(w http.ResponseWriter, r *http.Request) {
-
 	id, err := uuid.Parse(chi.URLParam(r, "id"))
 	if err != nil {
 		http.Error(w, "invalid id", http.StatusBadRequest)
 		return
 	}
 
-	err = h.categoryService.DeleteByID(r.Context(), id)
-	if err != nil {
+	if err := h.categoryService.DeleteByID(r.Context(), id); err != nil {
 		http.Error(w, "id not found", http.StatusBadRequest)
 		return
 	}

@@ -63,7 +63,7 @@ func (c *CategoryServiceImpl) UpdateByID(ctx context.Context, id uuid.UUID, requ
 }
 
 func (c *CategoryServiceImpl) PatchByID(ctx context.Context, id uuid.UUID, request domain.CategoryPatchRequest) (domain.Category, error) {
-	category, err := c.repo.PatchById(ctx, id, request)
+	category, err := c.repo.PatchByID(ctx, id, request)
 	if err != nil {
 		return domain.Category{}, err
 	}

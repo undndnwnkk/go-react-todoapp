@@ -8,9 +8,9 @@ import (
 )
 
 type TokenPair struct {
-	AccessToken  string
-	RefreshToken string
-	ExpiresAt    int64
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+	ExpiresAt    int64  `json:"expires_at"`
 }
 
 type Claims struct {
@@ -25,4 +25,8 @@ type RefreshToken struct {
 	TokenHash string
 	ExpiresAt time.Time
 	CreatedAt time.Time
+}
+
+type RefreshRequest struct {
+	RefreshToken string `json:"refresh_token"`
 }

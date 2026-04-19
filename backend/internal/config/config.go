@@ -61,7 +61,7 @@ func (c *Config) Validate() error {
 	}
 
 	if c.JWT.RefreshTTL > 30 {
-		return domain.JwtRefreshLongError
+		return domain.ErrJwtRefreshLong
 	}
 	return nil
 }

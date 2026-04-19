@@ -12,7 +12,7 @@ type User struct {
 	LastName     string     `json:"last_name"`
 	Email        string     `json:"email"`
 	DateOfBirth  *time.Time `json:"date_of_birth"`
-	PasswordHash string     `json:"password_hash"`
+	PasswordHash string     `json:"-"`
 	CreatedAt    time.Time  `json:"created_at"`
 }
 
@@ -41,8 +41,8 @@ type UserPatchRequest struct {
 }
 
 type UserLoginRequest struct {
-	Email    string
-	Password string
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type UserIdResponse struct {

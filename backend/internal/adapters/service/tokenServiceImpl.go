@@ -1,6 +1,10 @@
 package service
 
 import (
+	"context"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"time"
 
@@ -12,30 +16,83 @@ import (
 )
 
 type TokenServiceImpl struct {
-	config          config.JWTConfig
-	tokenRepository ports.RefreshTokenRepository
+	config    config.JWTConfig
+	tokenRepo ports.RefreshTokenRepository
+	userRepo  ports.UserRepository
 }
 
-func (t *TokenServiceImpl) GenerateTokenPair(userID uuid.UUID, email string) (*domain.TokenPair, error) {
+func NewTokenService(cfg config.JWTConfig, tokenRepo ports.RefreshTokenRepository, userRepo ports.UserRepository) *TokenServiceImpl {
+	return &TokenServiceImpl{
+		config:    cfg,
+		tokenRepo: tokenRepo,
+		userRepo:  userRepo,
+	}
+}
+
+func (t *TokenServiceImpl) GenerateTokenPair(ctx context.Context, userID uuid.UUID, email string) (*domain.TokenPair, error) {
 	accessToken, expiresAt, err := t.generateAccessToken(userID, email)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("generate access token: %w", err)
 	}
 
-	refreshToken, err := t.generateRefreshToken(userID)
+	rawRefreshToken, err := t.generateAndStoreRefreshToken(ctx, userID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("generate refresh token: %w", err)
 	}
 
 	return &domain.TokenPair{
 		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
+		RefreshToken: rawRefreshToken,
 		ExpiresAt:    expiresAt.Unix(),
 	}, nil
 }
 
-func (t *TokenServiceImpl) generateAccessToken(userID uuid.UUID, email string) (string, time.Time, error) {
+func (t *TokenServiceImpl) RefreshTokens(ctx context.Context, rawRefreshToken string) (*domain.TokenPair, error) {
+	tokenHash := hashToken(rawRefreshToken)
 
+	stored, err := t.tokenRepo.GetByTokenHash(ctx, tokenHash)
+	if err != nil {
+		return nil, domain.ErrTokenNotFound
+	}
+
+	if time.Now().After(stored.ExpiresAt) {
+		_ = t.tokenRepo.DeleteByID(ctx, stored.ID)
+		return nil, domain.ErrExpiredToken
+	}
+
+	if err := t.tokenRepo.DeleteByID(ctx, stored.ID); err != nil {
+		return nil, fmt.Errorf("delete old refresh token: %w", err)
+	}
+
+	user, err := t.userRepo.GetByID(ctx, stored.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("get user for refresh: %w", err)
+	}
+
+	return t.GenerateTokenPair(ctx, stored.UserID, user.Email)
+}
+
+func (t *TokenServiceImpl) ValidateAccessToken(tokenString string) (*domain.Claims, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &domain.Claims{}, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(t.config.Secret), nil
+	})
+
+	if err != nil {
+		return nil, domain.ErrInvalidToken
+	}
+
+	claims, ok := token.Claims.(*domain.Claims)
+	if !ok || !token.Valid {
+		return nil, domain.ErrInvalidToken
+	}
+
+	return claims, nil
+}
+
+func (t *TokenServiceImpl) generateAccessToken(userID uuid.UUID, email string) (string, time.Time, error) {
 	expiresAt := time.Now().Add(time.Duration(t.config.AccessTTL) * time.Minute)
 
 	claims := domain.Claims{
@@ -43,7 +100,7 @@ func (t *TokenServiceImpl) generateAccessToken(userID uuid.UUID, email string) (
 		Email:  email,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    "todoapp",
-			Subject:   fmt.Sprintf("%d", userID),
+			Subject:   userID.String(),
 			Audience:  jwt.ClaimStrings{"todoapp-api"},
 			ExpiresAt: jwt.NewNumericDate(expiresAt),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -60,18 +117,31 @@ func (t *TokenServiceImpl) generateAccessToken(userID uuid.UUID, email string) (
 	return signed, expiresAt, nil
 }
 
-func (t *TokenServiceImpl) generateRefreshToken(userID uuid.UUID) (string, error) {
-	claims := jwt.RegisteredClaims{
-		Subject:   fmt.Sprintf("%d", userID),
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(t.config.RefreshTTL) * time.Minute)),
-		IssuedAt:  jwt.NewNumericDate(time.Now()),
-		ID:        uuid.New().String(),
+func (t *TokenServiceImpl) generateAndStoreRefreshToken(ctx context.Context, userID uuid.UUID) (string, error) {
+	_ = t.tokenRepo.DeleteByUserID(ctx, userID)
+
+	randomBytes := make([]byte, 32)
+	if _, err := rand.Read(randomBytes); err != nil {
+		return "", fmt.Errorf("generate random bytes: %w", err)
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(t.config.Secret)
+	rawToken := hex.EncodeToString(randomBytes)
+	tokenHash := hashToken(rawToken)
+
+	refreshToken := domain.RefreshToken{
+		UserID:    userID,
+		TokenHash: tokenHash,
+		ExpiresAt: time.Now().Add(time.Duration(t.config.RefreshTTL) * 24 * time.Hour),
+	}
+
+	if err := t.tokenRepo.Create(ctx, refreshToken); err != nil {
+		return "", fmt.Errorf("store refresh token: %w", err)
+	}
+
+	return rawToken, nil
 }
 
-func NewTokenService(config config.JWTConfig, repo ports.RefreshTokenRepository) *TokenServiceImpl {
-	return &TokenServiceImpl{config: config, tokenRepository: repo}
+func hashToken(token string) string {
+	hash := sha256.Sum256([]byte(token))
+	return hex.EncodeToString(hash[:])
 }

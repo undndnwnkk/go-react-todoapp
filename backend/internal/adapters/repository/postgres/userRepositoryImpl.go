@@ -20,11 +20,11 @@ func NewUserRepository(pool *pgxpool.Pool) *UserRepoImpl {
 	}
 }
 
-func (u UserRepoImpl) GetAll(ctx context.Context) ([]domain.User, error) {
+func (u *UserRepoImpl) GetAll(ctx context.Context) ([]domain.User, error) {
 	var users []domain.User
 
 	rows, err := u.pool.Query(ctx,
-		`SELECT * FROM users`,
+		`SELECT id, name, last_name, email, date_of_birth, password_hash, created_at FROM users`,
 	)
 	if err != nil {
 		return nil, err
@@ -42,53 +42,57 @@ func (u UserRepoImpl) GetAll(ctx context.Context) ([]domain.User, error) {
 	return users, nil
 }
 
-func (u UserRepoImpl) GetByID(ctx context.Context, id uuid.UUID) (domain.User, error) {
+func (u *UserRepoImpl) GetByID(ctx context.Context, id uuid.UUID) (domain.User, error) {
 	var user domain.User
 
 	err := u.pool.QueryRow(
 		ctx,
-		`SELECT * FROM users WHERE id = $1`,
+		`SELECT id, name, last_name, email, date_of_birth, password_hash, created_at FROM users WHERE id = $1`,
 		id,
 	).Scan(&user.ID, &user.Name, &user.LastName, &user.Email, &user.DateOfBirth, &user.PasswordHash, &user.CreatedAt)
 
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.User{}, domain.ErrUserNotFound
+		}
 		return domain.User{}, err
 	}
 
 	return user, nil
 }
 
-func (u UserRepoImpl) GetByEmail(ctx context.Context, email string) (domain.User, error) {
+func (u *UserRepoImpl) GetByEmail(ctx context.Context, email string) (domain.User, error) {
 	var user domain.User
 
 	err := u.pool.QueryRow(
 		ctx,
-		`SELECT * FROM users WHERE email = $1`,
+		`SELECT id, name, last_name, email, date_of_birth, password_hash, created_at FROM users WHERE email = $1`,
 		email,
 	).Scan(&user.ID, &user.Name, &user.LastName, &user.Email, &user.DateOfBirth, &user.PasswordHash, &user.CreatedAt)
 
 	if err != nil {
-		return domain.User{}, domain.ErrUserNotFound
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.User{}, domain.ErrUserNotFound
+		}
+		return domain.User{}, err
 	}
 
 	return user, nil
 }
 
-func (u UserRepoImpl) Create(ctx context.Context, request domain.UserCreateRequest) (domain.UserIdResponse, error) {
+func (u *UserRepoImpl) Create(ctx context.Context, request domain.UserCreateRequest) (domain.UserIdResponse, error) {
 	var id uuid.UUID
 
 	err := u.pool.QueryRow(
 		ctx,
-		`INSERT INTO 
-    	users (name, last_name, email, date_of_birth, password_hash, created_at) 
-		VALUES ($1, $2, $3, $4, $5, $6)
-		RETURNING id`,
+		`INSERT INTO users (name, last_name, email, date_of_birth, password_hash)
+		 VALUES ($1, $2, $3, $4, $5)
+		 RETURNING id`,
 		request.Name,
 		request.LastName,
 		request.Email,
 		request.DateOfBirth,
 		request.Password,
-		request.CreatedAt,
 	).Scan(&id)
 
 	if err != nil {
@@ -98,7 +102,7 @@ func (u UserRepoImpl) Create(ctx context.Context, request domain.UserCreateReque
 	return domain.UserIdResponse{ID: id}, nil
 }
 
-func (u UserRepoImpl) UpdateByID(ctx context.Context, id uuid.UUID, request domain.UserUpdateRequest) (domain.User, error) {
+func (u *UserRepoImpl) UpdateByID(ctx context.Context, id uuid.UUID, request domain.UserUpdateRequest) (domain.User, error) {
 	var user domain.User
 
 	err := u.pool.QueryRow(
@@ -125,34 +129,36 @@ func (u UserRepoImpl) UpdateByID(ctx context.Context, id uuid.UUID, request doma
 	return user, nil
 }
 
-func (u UserRepoImpl) DeleteByID(ctx context.Context, id uuid.UUID) error {
+func (u *UserRepoImpl) DeleteByID(ctx context.Context, id uuid.UUID) error {
 	res, err := u.pool.Exec(
 		ctx,
-		`DELETE FROM users 
-		WHERE id = $1`,
+		`DELETE FROM users WHERE id = $1`,
 		id,
 	)
 
-	affected := res.RowsAffected()
 	if err != nil {
 		return err
 	}
-	if affected == 0 {
+
+	if res.RowsAffected() == 0 {
 		return domain.ErrUserNotFound
 	}
 	return nil
 }
 
-func (u UserRepoImpl) PatchByID(ctx context.Context, id uuid.UUID, request domain.UserPatchRequest) (domain.User, error) {
+func (u *UserRepoImpl) PatchByID(ctx context.Context, id uuid.UUID, request domain.UserPatchRequest) (domain.User, error) {
 	var base domain.User
 
 	err := u.pool.QueryRow(
 		ctx,
-		`SELECT * FROM users WHERE id = $1`,
+		`SELECT id, name, last_name, email, date_of_birth, password_hash, created_at FROM users WHERE id = $1`,
 		id,
 	).Scan(&base.ID, &base.Name, &base.LastName, &base.Email, &base.DateOfBirth, &base.PasswordHash, &base.CreatedAt)
 
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.User{}, domain.ErrUserNotFound
+		}
 		return domain.User{}, err
 	}
 
@@ -183,9 +189,9 @@ func validatePatchData(base domain.User, request domain.UserPatchRequest) domain
 	} else {
 		result.PasswordHash = *request.PasswordHash
 	}
-	if request.DateOfBirth == nil {
-		result.DateOfBirth = base.DateOfBirth.String()
-	} else {
+	if request.DateOfBirth == nil && base.DateOfBirth != nil {
+		result.DateOfBirth = base.DateOfBirth.Format("2006-01-02")
+	} else if request.DateOfBirth != nil {
 		result.DateOfBirth = *request.DateOfBirth
 	}
 

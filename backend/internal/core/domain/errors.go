@@ -15,6 +15,11 @@ var (
 	ErrShortCategoryName  = errors.New("invalid name")
 	ErrShortCategoryColor = errors.New("invalid color")
 
+	// Auth errors
+	ErrInvalidToken  = errors.New("invalid token")
+	ErrExpiredToken  = errors.New("token has expired")
+	ErrTokenNotFound = errors.New("refresh token not found")
+
 	// Database errors
 	ErrUserNotFound  = errors.New("user not found")
 	ErrAddToDatabase = errors.New("cant add user to user database")

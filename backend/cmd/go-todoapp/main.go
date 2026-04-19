@@ -20,13 +20,12 @@ func main() {
 		log.Fatalf("Error while loading config: %v", err)
 	}
 
-	// pgx logic
 	ctx := context.Background()
 	dsn := cfg.Database.GenerateDsn()
 
 	pool, err := pgxpool.New(ctx, dsn)
 	if err != nil {
-		log.Fatal("Pgxpool.New:", err)
+		log.Fatal("Pgxpool.New: ", err)
 	}
 	defer pool.Close()
 	log.Println("Pgxpool.New pool created")
@@ -34,28 +33,29 @@ func main() {
 	if err := pool.Ping(ctx); err != nil {
 		log.Fatal("Connection to database failed: ", err)
 	}
-	log.Print("Ping already working")
+	log.Println("Ping already working")
 
-	// DI
 	userRepository := postgres.NewUserRepository(pool)
 	taskRepository := postgres.NewTaskRepository(pool)
 	categoryRepository := postgres.NewCategoryRepository(pool)
+	tokenRepository := postgres.NewRefreshTokenRepository(pool)
 
 	userService := service.NewUserService(userRepository)
 	taskService := service.NewTaskService(taskRepository)
 	categoryService := service.NewCategoryService(categoryRepository)
+	tokenService := service.NewTokenService(cfg.JWT, tokenRepository, userRepository)
 
 	userHandler := handler.NewUserHandler(userService)
 	taskHandler := handler.NewTaskHandler(taskService)
 	categoryHandler := handler.NewCategoryHandler(categoryService)
-	// TODO
-	authHandler := handler.NewAuthHandler("todo")
+	authHandler := handler.NewAuthHandler(userService, tokenService)
 
 	handlers := app.NewHandlers(userHandler, taskHandler, categoryHandler, authHandler)
 
-	router := http.NewRouter(handlers)
-	err = http2.ListenAndServe(cfg.Server.Addr, router)
-	if err != nil {
+	router := http.NewRouter(handlers, tokenService)
+
+	log.Printf("Starting server on %s", cfg.Server.Addr)
+	if err := http2.ListenAndServe(cfg.Server.Addr, router); err != nil {
 		log.Fatal("Error while serving: ", err)
 	}
 }
