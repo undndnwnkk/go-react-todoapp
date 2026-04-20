@@ -5,11 +5,11 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/undndnwnkk/go-react-todoapp/internal/adapters/http/handler"
 	authmw "github.com/undndnwnkk/go-react-todoapp/internal/adapters/http/middleware"
-	"github.com/undndnwnkk/go-react-todoapp/internal/app"
 	"github.com/undndnwnkk/go-react-todoapp/internal/core/services"
+	"github.com/undndnwnkk/go-react-todoapp/internal/helpers"
 )
 
-func NewRouter(handlers *app.Handlers, tokenService services.TokenService) chi.Router {
+func NewRouter(handlers *helpers.Handlers, tokenService services.TokenService) chi.Router {
 	router := chi.NewRouter()
 
 	router.Use(middleware.Logger)

@@ -1,4 +1,4 @@
-package app
+package helpers
 
 import (
 	"github.com/undndnwnkk/go-react-todoapp/internal/adapters/http/handler"
