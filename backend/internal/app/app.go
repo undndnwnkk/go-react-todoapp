@@ -121,5 +121,6 @@ func (a *App) shutdown() error {
 	}
 
 	a.db.Close()
+	slog.Info("database pool closed")
 	return shutdownErr
 }

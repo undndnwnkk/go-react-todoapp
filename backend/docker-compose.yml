@@ -12,6 +12,32 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      backend:
+  app:
+    build:
+      context: .
+    container_name: todoapp-app
+    depends_on:
+      todoapp-postgres:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DB_HOST: todoapp-postgres
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_SSLMODE: ${DB_SSLMODE}
+    ports:
+      - "8000:8000"
     networks:
       backend:
 
